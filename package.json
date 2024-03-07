@@ -1,0 +1,16 @@
+{
+  "name": "job_hours",
+  "version": "1.0.0",
+  "description": "Trades & shop-workers often work on multiple jobs daily. If they do not carefully tack the hours spent on each job, it can lead to issues when it is time write invoices or bill contractors.",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.3"
+  }
+}
