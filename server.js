@@ -30,13 +30,31 @@ app.post('/', async (req, res) => {
     }
 });
 
-app.put('/', (req, res) => {
-    // TODO: Update job
-    res.send('Put');
+app.put('/', async (req, res) => {
+    const id = req.query.id;
+    const title = req.query.title;
+    const hours = +req.query.hours;
+    const update = {};
+
+    if (id) {
+        const jobs = await Job.find();
+        if (jobs.map(job => job._id.toHexString()).includes(id)) {
+            if (title && (typeof title === 'string' || title instanceof String)) {
+                update.title = title;
+            }
+            if (hours && (typeof hours === 'number' || hours instanceof Number)) {
+                update.hours = hours;
+            }
+            await Job.findByIdAndUpdate(id, update);
+            res.sendStatus(200);
+        } else {
+            res.sendStatus(404);
+        }
+    }
 });
 
 app.delete('/', async (req, res) => {
-    let id = req.query.id.toString().trim();
+    const id = req.query.id.toString().trim();
     if (id) {
         const jobs = await Job.find();
         if (jobs.map(job => job._id.toHexString()).includes(id)) {
