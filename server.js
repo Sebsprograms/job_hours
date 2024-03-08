@@ -10,29 +10,62 @@ mongoose.connect(process.env.ATLAS_URI);
 
 const Job = require('./models/job');
 
-app.get('/', (req, res) => {
-    // TODO: Send all jobs
-    res.send('Get');
+app.get('/', async (req, res) => {
+    const jobs = await Job.find();
+    res.json(jobs);
 });
 
 app.post('/', async (req, res) => {
-    // TODO: Add job to the list of jobs
-    const testJob = new Job({
-        title: 'Test Job',
-        hours: 11.5,
-    });
-    await testJob.save();
-    res.send('Post');
+    const title = req.query.title;
+    const hours = req.query.hours;
+    if (title && hours) {
+        const testJob = new Job({
+            title: title,
+            hours: hours,
+        });
+        await testJob.save();
+        res.sendStatus(201);
+    } else {
+        res.sendStatus(400);
+    }
 });
 
-app.put('/', (req, res) => {
-    // TODO: Update job
-    res.send('Put');
+app.put('/', async (req, res) => {
+    const id = req.query.id;
+    const title = req.query.title;
+    const hours = +req.query.hours;
+    const update = {};
+
+    if (id) {
+        const jobs = await Job.find();
+        if (jobs.map(job => job._id.toHexString()).includes(id)) {
+            if (title && (typeof title === 'string' || title instanceof String)) {
+                update.title = title;
+            }
+            if (hours && (typeof hours === 'number' || hours instanceof Number)) {
+                update.hours = hours;
+            }
+            await Job.findByIdAndUpdate(id, update);
+            res.sendStatus(200);
+        } else {
+            res.sendStatus(404);
+        }
+    }
 });
 
-app.delete('/', (req, res) => {
-    // TODO: Delete job
-    res.send('Delete');
+app.delete('/', async (req, res) => {
+    const id = req.query.id.toString().trim();
+    if (id) {
+        const jobs = await Job.find();
+        if (jobs.map(job => job._id.toHexString()).includes(id)) {
+            await Job.findByIdAndDelete(id);
+            res.sendStatus(204);
+        } else {
+            res.sendStatus(404);
+        }
+    } else {
+        res.sendStatus(400);
+    }
 });
 
 
