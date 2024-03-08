@@ -16,13 +16,18 @@ app.get('/', (req, res) => {
 });
 
 app.post('/', async (req, res) => {
-    // TODO: Add job to the list of jobs
-    const testJob = new Job({
-        title: 'Test Job',
-        hours: 11.5,
-    });
-    await testJob.save();
-    res.send('Post');
+    const title = req.query.title;
+    const hours = req.query.hours;
+    if (title && hours) {
+        const testJob = new Job({
+            title: title,
+            hours: hours,
+        });
+        await testJob.save();
+        res.sendStatus(201);
+    } else {
+        res.sendStatus(400);
+    }
 });
 
 app.put('/', (req, res) => {
