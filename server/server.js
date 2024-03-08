@@ -1,15 +1,25 @@
+// Imports
 require('dotenv').config();
-
-
 const express = require('express');
+const cors = require('cors');
 const app = express();
-const port = 3000;
+const port = 8000;
 
+// Middleware
+app.use(cors());
+app.use(express.json());
+
+// Database
 const mongoose = require('mongoose');
 mongoose.connect(process.env.ATLAS_URI);
-
 const Job = require('./models/job');
 
+// Test Route
+app.get('/test', (req, res) => {
+    res.json({ message: 'Test Route' });
+});
+
+// Routes
 app.get('/', async (req, res) => {
     const jobs = await Job.find();
     res.json(jobs);
