@@ -10,9 +10,9 @@ mongoose.connect(process.env.ATLAS_URI);
 
 const Job = require('./models/job');
 
-app.get('/', (req, res) => {
-    // TODO: Send all jobs
-    res.send('Get');
+app.get('/', async (req, res) => {
+    const jobs = await Job.find();
+    res.json(jobs);
 });
 
 app.post('/', async (req, res) => {
@@ -35,9 +35,19 @@ app.put('/', (req, res) => {
     res.send('Put');
 });
 
-app.delete('/', (req, res) => {
-    // TODO: Delete job
-    res.send('Delete');
+app.delete('/', async (req, res) => {
+    let id = req.query.id.toString().trim();
+    if (id) {
+        const jobs = await Job.find();
+        if (jobs.map(job => job._id.toHexString()).includes(id)) {
+            await Job.findByIdAndDelete(id);
+            res.sendStatus(204);
+        } else {
+            res.sendStatus(404);
+        }
+    } else {
+        res.sendStatus(400);
+    }
 });
 
 
