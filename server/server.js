@@ -22,8 +22,8 @@ app.get('/jobs', async (req, res) => {
 });
 
 app.post('/jobs', async (req, res) => {
-    const title = req.query.title;
-    const hours = req.query.hours;
+    const title = req.body.title;
+    const hours = req.body.hours;
     if (title && hours) {
         const testJob = new Job({
             title: title,
