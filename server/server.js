@@ -14,18 +14,14 @@ const mongoose = require('mongoose');
 mongoose.connect(process.env.ATLAS_URI);
 const Job = require('./models/job');
 
-// Test Route
-app.get('/test', (req, res) => {
-    res.json({ message: 'Test Route' });
-});
 
 // Routes
-app.get('/', async (req, res) => {
+app.get('/jobs', async (req, res) => {
     const jobs = await Job.find();
     res.json(jobs);
 });
 
-app.post('/', async (req, res) => {
+app.post('/jobs', async (req, res) => {
     const title = req.query.title;
     const hours = req.query.hours;
     if (title && hours) {
@@ -40,7 +36,7 @@ app.post('/', async (req, res) => {
     }
 });
 
-app.put('/', async (req, res) => {
+app.put('/jobs', async (req, res) => {
     const id = req.query.id;
     const title = req.query.title;
     const hours = +req.query.hours;
@@ -63,7 +59,7 @@ app.put('/', async (req, res) => {
     }
 });
 
-app.delete('/', async (req, res) => {
+app.delete('/jobs', async (req, res) => {
     const id = req.query.id.toString().trim();
     if (id) {
         const jobs = await Job.find();
