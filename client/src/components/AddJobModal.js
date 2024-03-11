@@ -1,17 +1,6 @@
 import { Modal, Button, Typography, Stack, TextField } from '@mui/material';
 import { useState } from 'react';
-
-const style = {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: 400,
-    bgcolor: '#eee',
-    borderRadius: '10px',
-    boxShadow: 24,
-    p: 4,
-};
+import style from '../styles/modals';
 
 export default function AddJobModal(props) {
     const { open, handleClose } = props;

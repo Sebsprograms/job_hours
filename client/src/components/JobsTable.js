@@ -1,23 +1,11 @@
 import { useEffect, useState } from "react";
 import { Table, TableContainer, TableHead, TableRow, TableCell, TableBody, Paper, IconButton } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
+import AreYouSureModal from "./AreYouSureModal";
 
 export default function JobsTable() {
     const [jobs, setJobs] = useState([]);
-
-
-    const deleteJob = (id) => {
-        try {
-            fetch(`http://localhost:8000/jobs?id=${id}`, {
-                method: 'DELETE'
-            })
-                .then(res => res.json());
-            window.location.reload();
-        } catch (error) {
-            console.log(error);
-        }
-
-    }
+    const [open, setOpen] = useState(false);
 
 
     useEffect(() => {
@@ -42,10 +30,11 @@ export default function JobsTable() {
                             <TableCell>{job.title}</TableCell>
                             <TableCell>{job.hours}</TableCell>
                             <TableCell>
-                                <IconButton onClick={() => { deleteJob(job._id) }}>
+                                <IconButton onClick={() => { setOpen(true) }}>
                                     <DeleteIcon />
                                 </IconButton>
                             </TableCell>
+                            <AreYouSureModal open={open} setOpen={setOpen} id={job._id} />
                         </TableRow>
                     ))}
                 </TableBody>
