@@ -38,8 +38,8 @@ app.post('/jobs', async (req, res) => {
 
 app.put('/jobs', async (req, res) => {
     const id = req.query.id;
-    const title = req.query.title;
-    const hours = +req.query.hours;
+    const title = req.body.title;
+    const hours = +req.body.hours;
     const update = {};
 
     if (id) {
