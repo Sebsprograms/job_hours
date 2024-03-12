@@ -2,7 +2,7 @@ import { Modal, Box, Typography, Button, Stack } from '@mui/material';
 import style from '../styles/modals';
 
 
-export default function AreYouSureModal({ open, setOpen, id }) {
+export default function VerifyDeleteModal({ open, setOpen, id }) {
     const handleClose = () => {
         setOpen(false);
     }

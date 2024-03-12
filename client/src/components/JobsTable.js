@@ -1,11 +1,26 @@
 import { useEffect, useState } from "react";
 import { Table, TableContainer, TableHead, TableRow, TableCell, TableBody, Paper, IconButton } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
-import AreYouSureModal from "./AreYouSureModal";
+import EditIcon from '@mui/icons-material/Edit';
+import VerifyDeleteModal from "./VerifyDeleteModal";
+import EditJobModal from "./EditJobModal";
 
 export default function JobsTable() {
     const [jobs, setJobs] = useState([]);
-    const [open, setOpen] = useState(false);
+    const [openDeleteModal, setOpenDeleteModal] = useState(false);
+    const [openEditModal, setOpenEditModal] = useState(false);
+    const [deleteId, setDeleteId] = useState('');
+    const [selectedJob, setSelectedJob] = useState('');
+
+    const deleteJob = (id) => {
+        setDeleteId(id);
+        setOpenDeleteModal(true);
+    }
+
+    const editJob = (job) => {
+        setSelectedJob(job);
+        setOpenEditModal(true);
+    }
 
 
     useEffect(() => {
@@ -30,15 +45,21 @@ export default function JobsTable() {
                             <TableCell>{job.title}</TableCell>
                             <TableCell>{job.hours}</TableCell>
                             <TableCell>
-                                <IconButton onClick={() => { setOpen(true) }}>
+                                <IconButton onClick={() => { deleteJob(job._id) }}>
                                     <DeleteIcon />
                                 </IconButton>
                             </TableCell>
-                            <AreYouSureModal open={open} setOpen={setOpen} id={job._id} />
+                            <TableCell>
+                                <IconButton onClick={() => { editJob(job) }}>
+                                    <EditIcon />
+                                </IconButton>
+                            </TableCell>
                         </TableRow>
                     ))}
                 </TableBody>
             </Table>
+            <VerifyDeleteModal open={openDeleteModal} setOpen={setOpenDeleteModal} id={deleteId} />
+            <EditJobModal open={openEditModal} setOpen={setOpenEditModal} job={selectedJob} />
         </TableContainer>
     );
 }
