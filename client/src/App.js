@@ -1,31 +1,21 @@
-import { useState } from 'react';
-import JobsTable from './components/JobsTable';
-import { Button, Stack } from '@mui/material'
-import AddJobModal from './components/AddJobModal';
+import { RouterProvider, createBrowserRouter } from "react-router-dom";
+import { Landing, Jobs, Error, Layout } from "./pages";
 
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Layout />,
+    errorElement: <Error />,
+    children: [
+      { path: "/", element: <Landing /> },
+      { path: "jobs", element: <Jobs /> },
+
+    ],
+  },
+]);
 
 function App() {
-  const [addJobOpen, setAddJobOpen] = useState(false);
-  const toggleAddJobOpen = () => setAddJobOpen(prev => !prev);
-  return (
-    <Stack
-      backgroundColor='lightgray'
-      height='100vh'
-      padding='16px'
-      direction="column"
-      spacing={2}
-      alignItems='center'
-      justifyContent='center'
-    >
-      <JobsTable />
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={toggleAddJobOpen}
-      >Add Job</Button>
-      <AddJobModal open={addJobOpen} handleClose={toggleAddJobOpen} />
-    </Stack>
-  );
+  return <RouterProvider router={router} />;
 }
 
 export default App;
