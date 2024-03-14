@@ -1,11 +1,13 @@
 import { Modal, Button, Typography, Stack, TextField } from '@mui/material';
 import { useState } from 'react';
 import style from '../styles/modals';
+import { DatePicker } from '@mui/x-date-pickers';
 
 export default function AddJobModal(props) {
     const { open, handleClose } = props;
     const [title, setTitle] = useState('');
     const [hours, setHours] = useState(0);
+    const [date, setDate] = useState(null);
 
     const closeModal = () => {
         setTitle('');
@@ -23,7 +25,8 @@ export default function AddJobModal(props) {
                 },
                 body: JSON.stringify({
                     title,
-                    hours
+                    hours,
+                    date
                 })
             });
 
@@ -58,7 +61,8 @@ export default function AddJobModal(props) {
                     value={hours}
                     onChange={e => setHours(e.target.value)}
                 />
-                {(title.length === 0 || hours === 0) &&
+                <DatePicker value={date} onChange={(newDate) => setDate(newDate)} />
+                {(title.length === 0 || hours === 0 || date === null) &&
                     <Typography variant='caption' color='error'>
                         Please fill out all fields
                     </Typography>

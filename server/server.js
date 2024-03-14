@@ -4,6 +4,7 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 const port = 8000;
+const isValidDate = require('./helpers').isValidDate;
 
 // Middleware
 app.use(cors());
@@ -15,6 +16,8 @@ mongoose.connect(process.env.ATLAS_URI);
 const Job = require('./models/job');
 
 
+
+
 // Routes
 app.get('/jobs', async (req, res) => {
     const jobs = await Job.find();
@@ -24,10 +27,13 @@ app.get('/jobs', async (req, res) => {
 app.post('/jobs', async (req, res) => {
     const title = req.body.title;
     const hours = req.body.hours;
-    if (title && hours) {
+    const date = req.body.date;
+
+    if (title && hours && date && isValidDate(date)) {
         const testJob = new Job({
             title: title,
             hours: hours,
+            date: new Date(date),
         });
         await testJob.save();
         res.sendStatus(201);
@@ -40,6 +46,7 @@ app.put('/jobs', async (req, res) => {
     const id = req.query.id;
     const title = req.body.title;
     const hours = +req.body.hours;
+    const date = req.body.date;
     const update = {};
 
     if (id) {
@@ -50,6 +57,9 @@ app.put('/jobs', async (req, res) => {
             }
             if (hours && (typeof hours === 'number' || hours instanceof Number)) {
                 update.hours = hours;
+            }
+            if (date && isValidDate(date)) {
+                update.date = new Date(date);
             }
             await Job.findByIdAndUpdate(id, update);
             res.sendStatus(200);
