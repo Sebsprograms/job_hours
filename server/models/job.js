@@ -1,13 +1,19 @@
-const mongoose = require('mongoose');
+import mongoose from "mongoose";
 const { Schema, model } = mongoose;
 
 const jobSchema = Schema({
+    id: String,
     title: String,
-    hours: Number,
-    date: Date,
+    description: String,
+    timeLogged: [{
+        id: String,
+        hours: Number,
+        date: Date,
+    }],
+
 });
 
 const Job = model('Job', jobSchema);
 
 
-module.exports = Job;
+export default Job;
