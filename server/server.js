@@ -1,91 +1,111 @@
 // Imports
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
+import dotenv from 'dotenv';
+import express from 'express';
+import cors from 'cors';
+import morgan from 'morgan';
+import mongoose from 'mongoose';
+import { nanoid } from 'nanoid';
+
+import Job from './models/job.js';
+import { isValidDate } from './utils/helpers.js';
+
+dotenv.config();
 const app = express();
-const port = 8000;
-const isValidDate = require('./helpers').isValidDate;
 
 // Middleware
 app.use(cors());
 app.use(express.json());
+if (process.env.NODE_ENV === 'development') {
+    app.use(morgan('dev'));
+}
 
 // Database
-const mongoose = require('mongoose');
 mongoose.connect(process.env.ATLAS_URI);
-const Job = require('./models/job');
 
 
 
 
 // Routes
-app.get('/jobs', async (req, res) => {
+// Get all jobs
+app.get('/api/v1/jobs', async (req, res) => {
     const jobs = await Job.find();
-    res.json(jobs);
+    if (!jobs) {
+        return res.status(404).json({ message: 'No jobs found' });
+    }
+    res.status(200).json(jobs);
 });
 
-app.post('/jobs', async (req, res) => {
-    const title = req.body.title;
-    const hours = req.body.hours;
-    const date = req.body.date;
+// Get a Job by id
+app.get('/api/v1/jobs/:id', async (req, res) => {
+    const id = req.params.id;
+    const job = await Job.findById(id);
 
-    if (title && hours && date && isValidDate(date)) {
-        const testJob = new Job({
+    if (!job) {
+        return res.status(404).json({ message: 'Job not found' });
+    }
+
+    res.status(200).json(job);
+
+});
+
+app.post('/api/v1/jobs', async (req, res) => {
+    const title = req.body.title;
+    const description = req.body.description;
+    const timeLogged = req.body.timeLogged;
+
+    if (title && description) {
+        const newJob = new Job({
+            id: nanoid(10),
             title: title,
-            hours: hours,
-            date: new Date(date),
+            description: description,
+            timeLogged: timeLogged ? timeLogged : [],
         });
-        await testJob.save();
-        res.sendStatus(201);
+        await newJob.save();
+        res.status(201).json({ message: 'Job created', job: newJob });
     } else {
         res.sendStatus(400);
     }
 });
 
-app.put('/jobs', async (req, res) => {
-    const id = req.query.id;
+app.patch('/api/v1/jobs/:id', async (req, res) => {
+    const id = req.params.id;
     const title = req.body.title;
-    const hours = +req.body.hours;
-    const date = req.body.date;
-    const update = {};
+    const description = req.body.description;
+    const timeLogged = req.body.timeLogged;
 
-    if (id) {
-        const jobs = await Job.find();
-        if (jobs.map(job => job._id.toHexString()).includes(id)) {
-            if (title && (typeof title === 'string' || title instanceof String)) {
-                update.title = title;
-            }
-            if (hours && (typeof hours === 'number' || hours instanceof Number)) {
-                update.hours = hours;
-            }
-            if (date && isValidDate(date)) {
-                update.date = new Date(date);
-            }
-            await Job.findByIdAndUpdate(id, update);
-            res.sendStatus(200);
-        } else {
-            res.sendStatus(404);
-        }
+    const job = await Job.findOne({ id: id });
+    if (!job) {
+        return res.status(404).json({ message: 'Job not found' });
     }
+
+    if (title) {
+        job.title = title;
+    }
+
+    if (description) {
+        job.description = description;
+    }
+
+    if (timeLogged) {
+        job.timeLogged = timeLogged;
+    }
+
+    await job.save();
+    res.status(200).json({ message: 'Job updated', job: job });
 });
 
-app.delete('/jobs', async (req, res) => {
-    const id = req.query.id.toString().trim();
-    if (id) {
-        const jobs = await Job.find();
-        if (jobs.map(job => job._id.toHexString()).includes(id)) {
-            await Job.findByIdAndDelete(id);
-            res.sendStatus(204);
-        } else {
-            res.sendStatus(404);
-        }
-    } else {
-        res.sendStatus(400);
+app.delete('/api/v1/jobs/:id', async (req, res) => {
+    const id = req.params.id;
+    const job = await Job.findOne({ id: id });
+    if (!job) {
+        return res.status(404).json({ message: 'Job not found' });
     }
+    await Job.findOneAndDelete({ id: id });
+    res.status(200).json({ message: 'Job deleted' });
 });
 
 
-
+const port = process.env.PORT || 8000;
 app.listen(port, () => {
     console.log(`App listening on ${port}`);
 });
