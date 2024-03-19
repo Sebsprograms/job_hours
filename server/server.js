@@ -7,7 +7,7 @@ import mongoose from 'mongoose';
 import { nanoid } from 'nanoid';
 
 import Job from './models/job.js';
-import { isValidDate } from './utils/helpers.js';
+import { isValidDate, sanitizeDate } from './utils/helpers.js';
 
 dotenv.config();
 const app = express();
@@ -38,7 +38,7 @@ app.get('/api/v1/jobs', async (req, res) => {
 // Get a Job by id
 app.get('/api/v1/jobs/:id', async (req, res) => {
     const id = req.params.id;
-    const job = await Job.findById(id);
+    const job = await Job.find({ id: id });
 
     if (!job) {
         return res.status(404).json({ message: 'Job not found' });
@@ -48,6 +48,7 @@ app.get('/api/v1/jobs/:id', async (req, res) => {
 
 });
 
+// Create a new job
 app.post('/api/v1/jobs', async (req, res) => {
     const title = req.body.title;
     const description = req.body.description;
@@ -67,6 +68,7 @@ app.post('/api/v1/jobs', async (req, res) => {
     }
 });
 
+// Update a job by id
 app.patch('/api/v1/jobs/:id', async (req, res) => {
     const id = req.params.id;
     const title = req.body.title;
@@ -94,6 +96,7 @@ app.patch('/api/v1/jobs/:id', async (req, res) => {
     res.status(200).json({ message: 'Job updated', job: job });
 });
 
+// Delete a job by id
 app.delete('/api/v1/jobs/:id', async (req, res) => {
     const id = req.params.id;
     const job = await Job.findOne({ id: id });
@@ -102,6 +105,123 @@ app.delete('/api/v1/jobs/:id', async (req, res) => {
     }
     await Job.findOneAndDelete({ id: id });
     res.status(200).json({ message: 'Job deleted' });
+});
+
+// Add hours to job on a date
+app.post('/api/v1/jobs/:id/hours', async (req, res) => {
+    const id = req.params.id;
+    const date = req.body.date;
+    const hours = req.body.hours;
+
+    if (!isValidDate(date)) {
+        return res.status(400).json({ message: 'Invalid date' });
+    }
+
+    const job = await Job.findOne({ id: id });
+    if (!job) {
+        return res.status(404).json({ message: 'Job not found' });
+    }
+    const newDate = new Date(date);
+    const comparsion = sanitizeDate(newDate);
+    if (job.timeLogged.some(log => {
+        const logdate = new Date(log.date);
+        const logcomparsion = sanitizeDate(logdate);
+        return logcomparsion === comparsion;
+
+    })) {
+        return res.status(400).json({ message: 'Hours already logged for this date' });
+    }
+
+    job.timeLogged.push({ id: nanoid(10), date: date, hours: hours });
+    await job.save();
+    res.status(201).json({ message: 'Hours added', job: job });
+});
+
+// Get hours by date from job
+app.get('/api/v1/jobs/:id/hours/', async (req, res) => {
+    const id = req.params.id;
+    const date = req.body.date;
+
+    if (!isValidDate(date)) {
+        return res.status(400).json({ message: 'Invalid date' });
+    }
+
+    const job = await Job.findOne({ id: id });
+    if (!job) {
+        return res.status(404).json({ message: 'Job not found' });
+    }
+
+    const hours = job.timeLogged.find(log => {
+        const logDate = new Date(log.date);
+        return sanitizeDate(logDate) === sanitizeDate(new Date(date));
+    });
+
+    if (!hours) {
+        return res.status(404).json({ message: 'Hours not found' });
+    }
+
+    res.status(200).json(hours);
+});
+
+// Change hours on date
+app.patch('/api/v1/jobs/:id/hours/', async (req, res) => {
+    const id = req.params.id;
+    const date = req.body.date;
+    const hours = req.body.hours;
+
+    if (!isValidDate(date)) {
+        return res.status(400).json({ message: 'Invalid date' });
+    }
+
+    const job = await Job.findOne({ id: id });
+    if (!job) {
+        return res.status(404).json({ message: 'Job not found' });
+    }
+
+    const log = job.timeLogged.find(log => {
+        const logDate = new Date(log.date);
+        return sanitizeDate(logDate) === sanitizeDate(new Date(date));
+    });
+
+    if (!log) {
+        return res.status(404).json({ message: 'Hours not found' });
+    }
+
+    log.hours = hours;
+    await job.save();
+    res.status(200).json({ message: 'Hours updated', job: job });
+});
+
+// Delete hours from job on a date
+app.delete('/api/v1/jobs/:id/hours/', async (req, res) => {
+    const id = req.params.id;
+    const date = req.body.date;
+
+    if (!isValidDate(date)) {
+        return res.status(400).json({ message: 'Invalid date' });
+    }
+
+    const job = await Job.findOne({ id: id });
+    if (!job) {
+        return res.status(404).json({ message: 'Job not found' });
+    }
+
+    const log = job.timeLogged.find(log => {
+        const logDate = new Date(log.date);
+        return sanitizeDate(logDate) === sanitizeDate(new Date(date));
+    });
+
+    if (!log) {
+        return res.status(404).json({ message: 'Hours not found' });
+    }
+
+    job.timeLogged = job.timeLogged.filter(log => {
+        const logDate = new Date(log.date);
+        return sanitizeDate(logDate) !== sanitizeDate(new Date(date));
+    });
+
+    await job.save();
+    res.status(200).json({ message: 'Hours deleted', job: job });
 });
 
 
