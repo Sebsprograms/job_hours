@@ -19,12 +19,6 @@ if (process.env.NODE_ENV === 'development') {
     app.use(morgan('dev'));
 }
 
-// Database
-mongoose.connect(process.env.ATLAS_URI);
-
-
-
-
 // Routes
 // Get all jobs
 app.get('/api/v1/jobs', async (req, res) => {
@@ -224,8 +218,24 @@ app.delete('/api/v1/jobs/:id/hours/', async (req, res) => {
     res.status(200).json({ message: 'Hours deleted', job: job });
 });
 
+app.use('*', (req, res) => {
+    res.status(404).json({ message: 'Route not found' });
+});
+
+app.use((err, req, res, next) => {
+    console.error(err);
+    res.status(500).json({ message: 'Internal server error' });
+});
+
 
 const port = process.env.PORT || 8000;
-app.listen(port, () => {
-    console.log(`App listening on ${port}`);
-});
+try {
+    // Database
+    await mongoose.connect(process.env.ATLAS_URI);
+    app.listen(port, () => {
+        console.log(`App listening on ${port}`);
+    });
+} catch (error) {
+    console.error(error);
+    process.exit(1);
+}
