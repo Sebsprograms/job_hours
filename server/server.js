@@ -1,4 +1,5 @@
 // Imports
+import 'express-async-errors';
 import dotenv from 'dotenv';
 import express from 'express';
 import cors from 'cors';
@@ -6,6 +7,8 @@ import morgan from 'morgan';
 import mongoose from 'mongoose';
 import jobRouter from './routes/jobRouter.js';
 import hoursRouter from './routes/hoursRouter.js';
+import { errorHandler } from './middleware/errorHandler.js';
+
 
 dotenv.config();
 const app = express();
@@ -19,16 +22,13 @@ if (process.env.NODE_ENV === 'development') {
 
 // Routes
 app.use('/api/v1/jobs', jobRouter);
-app.use('/api/v1/jobs/', hoursRouter);
+app.use('/api/v1/jobs', hoursRouter);
 
 app.use('*', (req, res) => {
     res.status(404).json({ message: 'Route not found' });
 });
 
-app.use((err, req, res, next) => {
-    console.error(err);
-    res.status(500).json({ message: 'Internal server error' });
-});
+app.use(errorHandler);
 
 
 const port = process.env.PORT || 8000;
